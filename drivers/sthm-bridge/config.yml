@@ -1,0 +1,6 @@
+name: 'STHM'
+packageKey: 'sthm'
+permissions:
+  lan: {}
+  discovery: {}
+description: "SmartThings Home Monitor arm state mirrored to Home Assistant over MQTT"

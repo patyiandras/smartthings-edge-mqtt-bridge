@@ -1,0 +1,14 @@
+vendor/SmartThingsEdgeDrivers/drivers/SmartThings/zigbee-switch
+vendor/SmartThingsEdgeDrivers/drivers/SmartThings/zigbee-button
+vendor/SmartThingsEdgeDrivers/drivers/SmartThings/zigbee-contact
+vendor/SmartThingsEdgeDrivers/drivers/SmartThings/zigbee-humidity-sensor
+vendor/SmartThingsEdgeDrivers/drivers/SmartThings/zigbee-window-treatment
+vendor/SmartThingsEdgeDrivers/drivers/SmartThings/zwave-switch
+vendor/SmartThingsEdgeDrivers/drivers/SmartThings/zwave-sensor
+vendor/SmartThingsEdgeDrivers/drivers/SmartThings/zwave-window-treatment
+vendor/Edge-Drivers-Beta/zigbee-switch-v6.5
+vendor/Edge-Drivers-Beta/zigbee-light-multifunction-v6
+vendor/Edge-Drivers-Beta/zigbee-motion-sensor-v4
+vendor/Edge-Drivers-Beta/zigbee-contact-mc-v3
+vendor/Edge-Drivers-Beta/zwave-drivers/Z-Wave Switch and Childs Mc/zwave-switch-mc-v4-childs-edge-config
+drivers/sthm-bridge

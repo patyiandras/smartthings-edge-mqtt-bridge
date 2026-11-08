@@ -1,0 +1,19 @@
+{
+  "_comment": "Qubino Flush Shutter: ha fel/le parancs utan nem indul el a motor (0 W, a modul azonnal a celt jelenti, mert elcsuszott a belso pozicioja), a driver az ellenkezo veghelyzetbe kuldi (kalibralas), majd ujrakuldi a celt. Reszletek: qubino_guard.lua.",
+  "ops": [
+    {
+      "add": "qubino_guard.lua",
+      "to": "src/qubino_guard.lua"
+    },
+    {
+      "file": "src/window-treatment-venetian/qubino-flush-shutter/init.lua",
+      "old": "local function window_shade_level_change(self, device, level, cmd)\n  device:send_to_component(SwitchMultilevel:Set({value = level}), cmd.component)\n",
+      "new": "local stb_guard = require \"qubino_guard\"\n\nlocal function window_shade_level_change(self, device, level, cmd)\n  if cmd.component == \"main\" then stb_guard.commanded(device, level) end\n  device:send_to_component(SwitchMultilevel:Set({value = level}), cmd.component)\n"
+    },
+    {
+      "file": "src/window-treatment-venetian/qubino-flush-shutter/init.lua",
+      "old": "      [capabilities.windowShade.commands.close.NAME] = close\n    },\n",
+      "new": "      [capabilities.windowShade.commands.close.NAME] = close,\n      [capabilities.windowShade.commands.pause.NAME] = function(driver, device, cmd)\n        stb_guard.cancel(device)\n        device:send_to_component(SwitchMultilevel:StopLevelChange({}), cmd.component)\n      end\n    },\n"
+    }
+  ]
+}

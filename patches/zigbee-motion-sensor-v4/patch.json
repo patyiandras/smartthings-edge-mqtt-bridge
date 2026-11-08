@@ -1,0 +1,38 @@
+{
+  "_comment": "Eredeti Xiaomi/Aqara mozgaserzekelo (lumi.sensor_motion, RTCGQ01LM) tamogatasa: a driver csak az .aq2-t ismeri. Az eszkoz csak 'mozgas van'-t kuld, ezert ugyanugy idozitett visszaallitas kell, mint az aq2-nel. Fenyerot nem mer, ezert sajat profil illuminance nelkul.",
+  "ops": [
+    {
+      "copy": "profiles/lumi-motion-illuminance.yml",
+      "to": "profiles/lumi-motion-battery.yml"
+    },
+    {
+      "file": "profiles/lumi-motion-battery.yml",
+      "old": "name: lumi-motion-illuminance",
+      "new": "name: lumi-motion-battery"
+    },
+    {
+      "file": "profiles/lumi-motion-battery.yml",
+      "old": "  - id: illuminanceMeasurement\n    version: 1\n",
+      "new": ""
+    },
+    {
+      "file": "src/zigbee-plugin-motion-sensor/can_handle.lua",
+      "old": "  { mfr = \"LUMI\", model = \"lumi.sensor_motion.aq2\" }",
+      "new": "  { mfr = \"LUMI\", model = \"lumi.sensor_motion.aq2\" },\n  { mfr = \"LUMI\", model = \"lumi.sensor_motion\" }"
+    },
+    {
+      "file": "src/zigbee-plugin-motion-sensor/init.lua",
+      "old": "if device:get_model() ==  \"lumi.sensor_motion.aq2\" then",
+      "new": "if device:get_model() ==  \"lumi.sensor_motion.aq2\" or device:get_model() == \"lumi.sensor_motion\" then"
+    },
+    {
+      "file": "fingerprints.yml",
+      "append": "  - id: \"LUMI/sensor_motion\"\n    deviceLabel: Xiaomi Motion Sensor RTCGQ01LM\n    manufacturer: LUMI\n    model: lumi.sensor_motion\n    deviceProfileName: lumi-motion-battery\n"
+    },
+    {
+      "file": "src/zigbee-plugin-motion-sensor/init.lua",
+      "old": "device.thread:call_with_delay(device.preferences.motionTimeOut, function(d)",
+      "new": "-- driver-valtas utan a regi profil marad, abban nincs motionTimeOut -> alapertek\n    device.thread:call_with_delay(device.preferences.motionTimeOut or 60, function(d)"
+    }
+  ]
+}

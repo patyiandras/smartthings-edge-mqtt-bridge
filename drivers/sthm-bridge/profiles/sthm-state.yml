@@ -1,0 +1,23 @@
+name: sthm-state
+components:
+  - id: main
+    capabilities:
+      - id: advancelegend34283.sthmState
+        version: 1
+      - id: advancelegend34283.sthmRequest
+        version: 1
+    categories:
+      - name: Others
+metadata:
+  vid: acb4e97d-5d3b-3f69-a478-e0c50352f962
+  mnmn: SmartThingsCommunity
+preferences:
+  - title: "Disarm PIN (HA)"
+    name: disarmPin
+    description: "Hatástalanítás HA-ból csak ezzel a PIN-nel. Üresen: HA-ból nem hatástalanítható."
+    required: false
+    preferenceType: string
+    definition:
+      stringType: password
+      minLength: 4
+      maxLength: 12

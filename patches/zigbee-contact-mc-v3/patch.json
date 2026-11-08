@@ -1,0 +1,8 @@
+{
+  "_comment": "Mariano nyilvanos repojabol hianyzik a zigbee-contact-mc-v3/src/child-devices.lua (az init.lua 37. sora require-olja) -> a driver indulaskor elhasal. A sajat zigbee-temp-humidity driverenek azonos API-ju (create_new(driver, device, component, profile)) moduljat vesszuk at, a gyermekeszkoz nev-elotagjat igazitva.",
+  "ops": [
+    { "vendor_copy": "vendor/Edge-Drivers-Beta/zigbee-temp-humidity-child-thermostat-edge/zigbee-driver/src/child-devices.lua",
+      "to": "src/child-devices.lua" },
+    { "file": "src/child-devices.lua", "old": "local label = \"Thermostat-\".. device.label", "new": "local label = \"Accel-\".. device.label" }
+  ]
+}

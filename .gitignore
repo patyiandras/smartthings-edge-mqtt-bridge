@@ -1,0 +1,6 @@
+vendor/
+build/
+.tmp/
+node_modules/
+.st-bridge.json
+__pycache__/

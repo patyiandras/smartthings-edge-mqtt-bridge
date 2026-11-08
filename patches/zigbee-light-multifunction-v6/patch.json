@@ -1,0 +1,43 @@
+{
+  "_comment": "GLEDOPTO GL-C-007 (2 ID) RGBW: a W-vegpont (altalaban 15) ugyanazon az eszkozon, a 'white' komponensen (sajat profil: rgbw-w-level-colortemp-2000-6500, a gyari 2000-6500-as RGBW profil + W). Presetek: szinhomerseklet -> W be, szin -> W ki (wPresetMode). A fo lampa ki/be a W-t is kapcsolja. Ha a hub vegpontlistajaban nincs W, a 12-15. vegpontot megszolitja. Reszletek: gledopto_w.lua. Az eszkozlapon (detailView) csak a fo kapcsolo/fenyero, a W, a szinhomerseklet es a szin latszik.",
+  "ops": [
+    {
+      "add": "gledopto_w.lua",
+      "to": "src/gledopto_w.lua"
+    },
+    {
+      "copy": "profiles/rgbw-level-colorTemp-2000-6500.yml",
+      "to": "profiles/rgbw-w-level-colortemp-2000-6500.yml"
+    },
+    {
+      "file": "profiles/rgbw-w-level-colortemp-2000-6500.yml",
+      "old": "name: rgbw-level-colortemp-2000-6500\n",
+      "new": "name: rgbw-w-level-colortemp-2000-6500\n"
+    },
+    {
+      "file": "profiles/rgbw-w-level-colortemp-2000-6500.yml",
+      "old": "  categories:\n  - name: Light\npreferences:\n",
+      "new": "  categories:\n  - name: Light\n- id: white\n  label: W\n  capabilities:\n  - id: switch\n    version: 1\n  - id: switchLevel\n    version: 1\n  categories:\n  - name: Light\npreferences:\n  - name: \"wPresetMode\"\n    title: \"W csatorna a presetekkel\"\n    description: \"Automatikus: a fehér (színhőmérséklet) preset a W-t is bekapcsolja a fő fényerővel, a színes preset kikapcsolja, a fényerőt a W is követi. Kézi: a W csak a saját vezérlőjével állítható. A fő lámpa kikapcsolása mindkét esetben a W-t is lekapcsolja.\"\n    required: false\n    preferenceType: enumeration\n    definition:\n      options:\n        \"auto\": \"Automatikus\"\n        \"manual\": \"Kézi\"\n      default: \"auto\"\n"
+    },
+    {
+      "file": "profiles/rgbw-w-level-colortemp-2000-6500.yml",
+      "old": "  detailView:\n    - component: main\n      capability: switch\n      version: 1\n    - component: main\n      capability: switchLevel\n      version: 1\n    - component: main\n      capability: legendabsolute60149.levelSteps\n      version: 1\n    - component: main\n      capability: colorTemperature\n      version: 1\n      values:\n        - key: \"colorTemperature.value\"\n          range: [ 2000, 6500 ]\n    - component: main\n      capability: legendabsolute60149.colorTemperatureSteps\n      version: 1\n    - component: main\n      capability: colorControl\n      version: 1\n    - component: main\n      capability: legendabsolute60149.hueSteps\n      version: 1\n    - component: main\n      capability: legendabsolute60149.randomOnOff1\n      version: 1\n    - component: main\n      capability: legendabsolute60149.randomNextStep\n      version: 1\n    - component: main\n      capability: legendabsolute60149.progressiveOn1\n      version: 1\n    - component: main\n      capability: legendabsolute60149.progressiveOff1\n      version: 1\n    - component: main\n      capability: legendabsolute60149.forcedOnLevel\n      version: 1\n    - component: main\n      capability: legendabsolute60149.circadian\n      version: 1\n    - component: main\n      capability: legendabsolute60149.colorChanging\n      version: 1\n    - component: main\n      capability: legendabsolute60149.colorChangeTimer\n      version: 1\n    - component: main\n      capability: legendabsolute60149.colorChangeMode1\n      version: 1\n    - component: main\n      capability: legendabsolute60149.effectsSetCommand\n      version: 1\n    - component: main\n      capability: legendabsolute60149.mirrorGroupFunction\n      version: 1\n    - component: main\n      capability: legendabsolute60149.getGroups\n      version: 1\n    - component: main\n      capability: legendabsolute60149.signalMetrics\n      version: 1\n    - component: main\n      capability: refresh\n      version: 1\n",
+      "new": "  # st-edge: csak a lenyeges vezerlok (a Mariano-extrak a komponensben maradnak, de nem latszanak)\n  detailView:\n    - component: main\n      capability: switch\n      version: 1\n    - component: main\n      capability: switchLevel\n      version: 1\n    - component: white\n      capability: switch\n      version: 1\n    - component: white\n      capability: switchLevel\n      version: 1\n    - component: main\n      capability: colorTemperature\n      version: 1\n      values:\n        - key: \"colorTemperature.value\"\n          range: [ 2000, 6500 ]\n    - component: main\n      capability: colorControl\n      version: 1\n"
+    },
+    {
+      "file": "profiles/rgbw-w-level-colortemp-2000-6500.yml",
+      "old": "    conditions:\n      - component: main\n        capability: switch\n        version: 1\n      - component: main\n        capability: switchLevel\n        version: 1\n",
+      "new": "    conditions:\n      - component: main\n        capability: switch\n        version: 1\n      - component: main\n        capability: switchLevel\n        version: 1\n      - component: white\n        capability: switch\n        version: 1\n      - component: white\n        capability: switchLevel\n        version: 1\n"
+    },
+    {
+      "file": "profiles/rgbw-w-level-colortemp-2000-6500.yml",
+      "old": "    actions:\n      - component: main\n        capability: switch\n        version: 1\n      - component: main\n        capability: switchLevel\n        version: 1\n",
+      "new": "    actions:\n      - component: main\n        capability: switch\n        version: 1\n      - component: main\n        capability: switchLevel\n        version: 1\n      - component: white\n        capability: switch\n        version: 1\n      - component: white\n        capability: switchLevel\n        version: 1\n"
+    },
+    {
+      "file": "src/init.lua",
+      "old": "defaults.register_for_default_handlers(zigbee_bulb_driver_template, zigbee_bulb_driver_template.supported_capabilities)\n",
+      "new": "defaults.register_for_default_handlers(zigbee_bulb_driver_template, zigbee_bulb_driver_template.supported_capabilities)\n-- st-edge patch: GLEDOPTO W csatorna a \"white\" komponensen\nrequire(\"gledopto_w\").wrap(zigbee_bulb_driver_template)\n"
+    }
+  ]
+}

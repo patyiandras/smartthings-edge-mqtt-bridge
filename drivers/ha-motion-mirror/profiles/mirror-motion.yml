@@ -1,0 +1,8 @@
+name: mirror-motion
+components:
+  - id: main
+    capabilities:
+      - id: motionSensor
+        version: 1
+    categories:
+      - name: MotionSensor

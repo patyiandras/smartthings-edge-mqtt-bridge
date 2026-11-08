@@ -1,0 +1,16 @@
+SmartThings Edge -> MQTT bridge for Home Assistant
+Copyright 2026 patyiandras (github.com/patyiandras)
+
+This product is built from and includes modified copies of:
+
+- SmartThingsEdgeDrivers
+  https://github.com/SmartThingsCommunity/SmartThingsEdgeDrivers
+  Copyright SmartThings, Inc. Licensed under the Apache License, Version 2.0.
+
+- Edge-Drivers-Beta
+  https://github.com/Mariano-Github/Edge-Drivers-Beta
+  Copyright Mariano Colmenarejo. Licensed under the Apache License, Version 2.0.
+
+Modifications: the st_bridge MQTT module is attached to each driver, native capability
+handlers are disabled, MQTT broker settings are added to the device profiles, and the
+changes in patches/ are applied. See build.py and patches/ for the exact changes.

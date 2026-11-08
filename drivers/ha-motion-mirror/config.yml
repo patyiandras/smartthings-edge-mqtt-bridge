@@ -1,0 +1,6 @@
+name: 'HA Motion Mirror'
+packageKey: 'ha-motion-mirror'
+permissions:
+  lan: {}
+  discovery: {}
+description: "Home Assistant motion sensors mirrored into SmartThings over local MQTT"
