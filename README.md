@@ -105,7 +105,17 @@ minute the "ST Bridge <driver>" device and the entities appear in Home Assistant
 (*Settings → Devices & services → MQTT*).
 
 If the broker cannot be reached, the device keeps working in SmartThings, and the bridge retries
-with a backoff of up to 60 s. The reason is shown in the diagnostic device's *Last error* entity.
+with a backoff of up to 60 s. Spaces at the start or end of the values are ignored.
+
+Troubleshooting: the diagnostic device only appears after the first successful connection, so look
+at the **broker log** first (Home Assistant: *Settings → Add-ons → Mosquitto broker → Log*):
+- `Client st_bridge_<driver> … disconnected: not authorised` → wrong user name or password.
+  Phone keyboards like to capitalise the first letter of the user name. Once connected, the
+  diagnostic device's *Last log* shows the earlier attempts, with the user name and password length
+  (never the password itself). A password with only letters, digits and simple symbols is the
+  safest choice.
+- No line from the hub at all → wrong host or port, or a firewall. Use the IP address, because the
+  hub cannot resolve `.local` names.
 
 ### Entity names
 

@@ -346,12 +346,17 @@ local function broker_from_prefs()
     local p = bridge.devices[id].preferences or {}
     local host = p.stbMqttHost
     if type(host) == "string" and host:match("%S") then
-      local user, pass = p.stbMqttUser, p.stbMqttPass
+      -- leading / trailing whitespace is a copy-paste or phone-keyboard accident, never intended
+      local function clean(s)
+        if type(s) ~= "string" then return nil end
+        s = s:match("^%s*(.-)%s*$")
+        return s ~= "" and s or nil
+      end
       return {
-        host = host:match("^%s*(.-)%s*$"),
+        host = clean(host),
         port = tonumber(p.stbMqttPort) or 1883,
-        username = (type(user) == "string" and user ~= "") and user or nil,
-        password = (type(pass) == "string" and pass ~= "") and pass or nil,
+        username = clean(p.stbMqttUser),
+        password = clean(p.stbMqttPass),
       }
     end
   end

@@ -95,4 +95,8 @@ assert(dropped == 2)
 -- removing that device falls back to the other one
 driver.lifecycle_dispatcher:dispatch(driver, lamp, "removed")
 assert(o.host == "10.0.0.5", "no fallback after removal")
+-- whitespace around the values (copy-paste, phone keyboard) is ignored
+plug.preferences = { stbMqttHost = "10.0.0.5", stbMqttUser = " st ", stbMqttPass = "pw  " }
+driver.lifecycle_dispatcher:dispatch(driver, plug, "infoChanged")
+assert(o.username == "st" and o.password == "pw", "credentials not trimmed")
 print("OK - public broker tests passed")

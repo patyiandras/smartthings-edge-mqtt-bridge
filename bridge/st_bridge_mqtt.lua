@@ -123,7 +123,20 @@ function M:_session()
 
   local typ, ack = self:_read_packet()
   if typ ~= 0x20 or not ack or #ack < 2 then self:_drop(); return nil, "no CONNACK: " .. tostring(ack) end
-  if ack:byte(2) ~= 0 then self:_drop(); return nil, "CONNACK refused rc=" .. ack:byte(2) end
+  if ack:byte(2) ~= 0 then
+    self:_drop()
+    local rc = ack:byte(2)
+    local why = ""
+    if rc == 4 or rc == 5 then -- bad user name or password / not authorized
+      -- the password itself is never logged, only what helps to spot a typo
+      local pw = o.password or ""
+      local non_ascii = false
+      for k = 1, #pw do if pw:byte(k) > 127 then non_ascii = true end end
+      why = string.format(" (not authorised: user %q, password %d characters%s)", o.username or "",
+        #pw, non_ascii and ", contains non-ASCII characters" or "")
+    end
+    return nil, "CONNACK refused rc=" .. rc .. why
+  end
 
   self.connected = true
   self.session_ok = true
