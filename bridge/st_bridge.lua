@@ -47,6 +47,7 @@ function bridge.subscribe(filter, fn)
 end
 
 local STATE = "stb"
+local CMD_VERIFY_S = 3 -- on/off command check (see on_message)
 local CMD = "stbc"
 
 -- Per-device availability. The hub knows when a Zigbee / Z-Wave device is offline, but
@@ -332,6 +333,27 @@ local function on_message(topic, payload)
     return
   end
   dispatch(cap_command)
+
+  -- On/off check: an on/off/level command that left the switch unchanged after a few seconds
+  -- is sent once more. Seen on an IKEA bulb after hours of idling: the first command(s) from HA
+  -- reached the driver but the lamp did not react, a refresh "woke it up". Logged as WARN so it
+  -- shows up in the bridge's last_log, to see how often it happens.
+  local want
+  if cap_id == "switch" and (cmd_name == "on" or cmd_name == "off") then
+    want = cmd_name
+  elseif cap_id == "switchLevel" and cmd_name == "setLevel" and type(args[1]) == "number" then
+    want = args[1] > 0 and "on" or "off"
+  end
+  if want and device:get_latest_state(comp_id, "switch", "switch") ~= want then
+    device.thread:call_with_delay(CMD_VERIFY_S, function()
+      local now = device:get_latest_state(comp_id, "switch", "switch")
+      if now ~= want then
+        log.warn(string.format("[st_bridge] %s: %s.%s had no effect in %ds (switch=%s), sending again",
+          tostring(device.label), cap_id, tostring(cmd_name), CMD_VERIFY_S, tostring(now)))
+        dispatch(cap_command)
+      end
+    end)
+  end
 end
 
 -- Broker settings. A private build bakes them into st_bridge_config.lua (build.py with

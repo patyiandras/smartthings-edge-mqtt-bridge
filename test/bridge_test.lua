@@ -158,6 +158,7 @@ assert(n == 1, "double hook: " .. n)
 
 -- commands from HA
 local msg = bridge.mqtt.opts.on_message
+lamp._state.main.switch.switch = "on" -- already in the wanted state: no on/off check
 msg("stbc/dev-1/main/switch/cmd", "on")
 msg("stbc/dev-1/main/switchLevel/setLevel", "57")
 lamp._state.main.switch.switch = "on"
@@ -172,6 +173,7 @@ assert(handled[2].command == "setLevel" and handled[2].args[1] == 57 and math.ty
 assert(handled[3].command == "setColorTemperature" and handled[3].args[1] == 2700)
 assert(handled[4].command == "setColor" and handled[4].args[1].hue == 33.3)
 -- lamp is "off" in the fake state cache: colour commands are preceded by "on"
+lamp._state.main.switch.switch = "off"
 handled = {}
 msg("stbc/dev-1/main/colorTemperature/setColorTemperature", "3000")
 assert(#handled == 2 and handled[1].command == "on" and handled[2].command == "setColorTemperature", "no on-before-colour")
@@ -293,6 +295,7 @@ handled = {}
 msg("stmirror/kitchen/motion", "active")
 assert(#got == 1 and got[1] == "stmirror/kitchen/motion=active", "extra message not routed")
 assert(#handled == 0, "extra message must not reach the command dispatcher")
+lamp._state.main.switch.switch = "on" -- (no on/off check)
 msg("stbc/dev-1/main/switch/cmd", "on")
 assert(#handled == 1 and #got == 1, "command path still works")
 bridge.skip_discovery = function() return true end
@@ -354,5 +357,27 @@ assert(avail(pubs, "plug-1") == "online" and avail(pubs, "child-1") == "online",
 now = now + 5000; bridge.check_availability()
 assert(avail(publishes(), "sens-1") == nil, "battery device never offline")
 os.time = real_time
+
+-- on/off check: a command that did not change the switch in 3 s is sent once more
+do
+  local delayed = {}
+  local orig = lamp.thread.call_with_delay
+  lamp.thread.call_with_delay = function(_, s, fn) delayed[#delayed + 1] = { s = s, fn = fn } end
+  lamp._state.main.switch.switch = "off"
+  handled = {}
+  local msg = bridge.mqtt.opts.on_message
+  msg("stbc/dev-1/main/switchLevel/setLevel", "80")
+  assert(#handled == 1 and #delayed == 1 and delayed[1].s == 3, "no check scheduled")
+  lamp._state.main.switch.switch = "on" -- the lamp reacted
+  delayed[1].fn()
+  assert(#handled == 1, "resent although it worked")
+  lamp._state.main.switch.switch = "on"
+  msg("stbc/dev-1/main/switch/cmd", "off")
+  delayed[2].fn() -- still "on": no effect
+  assert(#handled == 3 and handled[3].command == "off", "not resent")
+  assert(#delayed == 2, "resend must not schedule another check")
+  lamp.thread.call_with_delay = orig
+end
+
 
 print("OK - all st_bridge tests passed")
