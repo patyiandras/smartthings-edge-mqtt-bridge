@@ -78,7 +78,7 @@ part of this, because Home Assistant has native local integrations for them.
 Open the channel invitation, sign in with your Samsung account, enroll your hub and install the
 drivers you need:
 
-**Channel invitation: (coming soon)**
+**Channel invitation: https://bestow-regional.api.smartthings.com/invite/Boj0k8L37XlA**
 
 ### 3. Switch a device to the bridge driver
 

@@ -29,6 +29,10 @@
 -- Kevesebb Zigbee-forgalom (2026-11-07: a vezerlo sűrű kapcsolgatas utan 1 orara elnemult): a device:refresh()
 -- (Mariano: be/ki utan 3 s-mal, ha az allapot nem jott meg; a hid refresh-probaja) GLEDOPTO-nal csak a fo
 -- vegpont OnOff + CurrentLevel erteket olvassa, nem minden konfiguralt attributumot mindket vegponton (~8 olvasas).
+-- Ebresztes (2 ID): ha a vezerlo NUDGE_S ota semmire nem valaszolt (ket eletjel-olvasas elmaradt), az eletjel
+-- mellett a W ismert allapotat is elkuldjuk: a fo vegpont neha addig nem valaszol, amig a W nem kap parancsot
+-- (2026-11-03 es 11-07: a W-parancs utan azonnal magahoz tert; 11-08: ~1 orara elnemult). WARN-naplo az elso
+-- ebreszteskor es a magahoz tereskor.
 -- A W-vegpont a sajat refresh-ebol (read_white) olvashato. A szin/szinhomerseklet allapotat a parancsok azonnal
 -- visszajelzik, a Mariano-handler kesleltetett visszaolvasasai pedig maradnak.
 local capabilities = require "st.capabilities"
@@ -47,6 +51,9 @@ local ON_CHECK_S = 3 -- ennyi ido utan nezzuk, bekapcsolt-e a fo lampa (2 ID)
 local DEBUG = false -- ideiglenes nyomkovetes (WARN -> HA last_log)
 local KEEPALIVE_S = 300 -- eletjel-olvasas a fo vegpontrol (a hid 20 perc csend utan jelez offline-t)
 local KEEPALIVE_FIELD = "gledopto_keepalive"
+local NUDGE_S = 540 -- ennyi valasz nelkuli ido utan W-parancs is megy az eletjel mellett
+local RX_FIELD = "gledopto_last_rx"
+local NUDGED_FIELD = "gledopto_nudged"
 
 local M = {}
 
@@ -127,12 +134,42 @@ local function read_main(device)
   device:send(Level.attributes.CurrentLevel:read(device):to_endpoint(main))
 end
 
+-- eletjel; ha regota nincs valasz, a W ismert allapotanak ujrakuldese is (ebresztes)
+local function keepalive(device)
+  local ep = M.white_endpoint(device)
+  if ep and white_comp(device) and os.time() - (device:get_field(RX_FIELD) or os.time()) >= NUDGE_S then
+    local w = white_is_on(device)
+    if not device:get_field(NUDGED_FIELD) then
+      log.warn(string.format("[gledopto_w] %s: %d s ota nem valaszol, ebresztes W-paranccsal (%s)",
+        tostring(device.label), os.time() - device:get_field(RX_FIELD), w and "on" or "off"))
+      device:set_field(NUDGED_FIELD, true)
+    end
+    if w then
+      device:send(OnOff.server.commands.On(device):to_endpoint(ep))
+    else
+      device:send(OnOff.server.commands.Off(device):to_endpoint(ep))
+    end
+  end
+  read_main(device)
+end
+
 local function start_keepalive(device)
   local old = device:get_field(KEEPALIVE_FIELD)
   if old then device.thread:cancel_timer(old) end
+  device:set_field(RX_FIELD, os.time())
   device:set_field(KEEPALIVE_FIELD, device.thread:call_on_schedule(KEEPALIVE_S, function()
-    read_main(device)
+    keepalive(device)
   end, "gledopto keepalive"))
+end
+
+-- valasz jott a vezerlotol (OnOff/Level jelentes barmelyik vegpontrol)
+local function received(device)
+  if not is_gledopto(device) then return end
+  device:set_field(RX_FIELD, os.time())
+  if device:get_field(NUDGED_FIELD) then
+    device:set_field(NUDGED_FIELD, nil)
+    log.warn(string.format("[gledopto_w] %s: ebresztes utan ujra valaszol", tostring(device.label)))
+  end
 end
 
 -- fo eszkoz init utan: vegpontok naplozasa, profilvaltas, a korabbi W-gyerek torlese
@@ -175,6 +212,7 @@ end
 -- W-vegpont jelentese: a "white" komponensre megy, a Mariano-handler nem latja
 local function wrap_attr(orig, make_event)
   return function(driver, device, value, zb_rx)
+    received(device)
     local src = zb_rx.address_header.src_endpoint.value
     local ep = M.white_endpoint(device)
     -- valasz egy, a hub listajaban nem szereplo vegpontrol: ez a W

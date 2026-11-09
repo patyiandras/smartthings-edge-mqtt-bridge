@@ -307,3 +307,40 @@ r:refresh()
 assert(#r.sent == 1 and r.sent[1].kind == "full-refresh", "non-GLEDOPTO refresh untouched")
 print("gledopto keepalive OK")
 
+-- wake-up: 2 ID, no answer for NUDGE_S -> the keepalive also re-sends the W state; an answer clears it
+local real_time = os.time
+local now = 1000000
+os.time = function() return now end
+local z = new_device({ [11] = { 6, 8, 0x300 }, [15] = { 6, 8 } })
+z.profile.components.white = { id = "white" }
+lc.init(driver, z)
+local ka = last(z.scheduled)
+z.sent = {}
+now = now + 300
+ka.fn()
+assert(#z.sent == 2 and z.sent[1].kind == "OnOff:read", "answering device: only the keepalive reads")
+z.sent = {}
+now = now + 300
+local wn2 = #warns
+ka.fn()
+assert(z.sent[1].kind == "Off" and z.sent[1].ep == 15 and #z.sent == 3, "silent device: W state re-sent + reads")
+assert(#warns == wn2 + 1 and last(warns):find("ebresztes"), "wake-up logged once")
+now = now + 300
+ka.fn()
+assert(#warns == wn2 + 1, "no repeated log while silent")
+attrs[8][0](driver, z, { value = 200 }, rx(11))
+assert(last(warns):find("ujra valaszol"), "recovery logged")
+z.sent = {}
+now = now + 300
+ka.fn()
+assert(#z.sent == 2, "after the answer: only reads again")
+-- 1 ID (no W endpoint): never a W command
+local y = new_device({ [11] = { 6, 8, 0x300 } })
+lc.init(driver, y)
+y.sent = {}
+now = now + 2000
+last(y.scheduled).fn()
+assert(#y.sent == 2 and y.sent[1].kind == "OnOff:read", "1 ID: reads only")
+os.time = real_time
+print("gledopto wake-up OK")
+
