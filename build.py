@@ -104,6 +104,8 @@ def main(argv):
     cfg_text = re.sub(r"^(packageKey:\s*).*$", rf"\1'{new_key}'", cfg_text, count=1, flags=re.M)
     if not re.search(r"^\s+lan:", cfg_text, re.M):
         cfg_text = re.sub(r"^(permissions:\s*\n)", r"\1  lan: {}\n", cfg_text, count=1, flags=re.M)
+    if public:
+        cfg_text = public_metadata(cfg_text, src)
     (out / "config.yml").write_text(cfg_text, encoding="utf-8", newline="\n")
 
     # 2. native handlers off
@@ -148,6 +150,36 @@ def main(argv):
 
     print(f"OK: {out}")
     print(f"  driver valtozo: {r.group(2)}, native-flag patch: {patched_native} fajl, sajat patch: {patched} lepes, kulcs: {key or pkg}")
+
+
+PUBLIC_REPO = "https://github.com/patyiandras/smartthings-edge-mqtt-bridge"
+
+
+def public_metadata(cfg_text, src):
+    """Kozzeteheto build: a leiras es a tamogatasi link ne a Samsungra/Marianora mutasson
+    (az upstreambol orokolt "https://support.smartthings.com" felrevezeto lenne)."""
+    m = re.search(r"^description:\s*(['\"]?)(.*?)\1\s*$", cfg_text, re.M)
+    orig = m.group(2).strip() if m else ""
+    if "Mariano-Github" in orig or "Edge-Drivers-Beta" in str(src):
+        based = "based on Mariano's community driver (" + (orig or src.name) + ")"
+    elif "SmartThingsEdgeDrivers" in str(src):
+        based = "based on the open-source SmartThings driver (" + (orig or src.name) + ")"
+    else:
+        based = orig
+    if based == orig:  # sajat driver (drivers/): a sajat leirasa marad
+        desc = orig + ". Unofficial community driver, not supported by Samsung. Help: " + PUBLIC_REPO
+    else:
+        desc = "Community driver with a local MQTT bridge to Home Assistant, " + based \
+            + ". Unofficial, not supported by Samsung. Help: " + PUBLIC_REPO
+    line = "description: " + json.dumps(desc)
+    cfg_text = re.sub(r"^description:.*$", lambda _: line, cfg_text, count=1, flags=re.M) if m \
+        else cfg_text.rstrip("\n") + "\n" + line + "\n"
+    support = "vendorSupportInformation: " + json.dumps(PUBLIC_REPO + "/issues")
+    if re.search(r"^vendorSupportInformation:", cfg_text, re.M):
+        cfg_text = re.sub(r"^vendorSupportInformation:.*$", lambda _: support, cfg_text, count=1, flags=re.M)
+    else:
+        cfg_text = cfg_text.rstrip("\n") + "\n" + support + "\n"
+    return cfg_text
 
 
 BROKER_PREFS = [
